@@ -1,0 +1,41 @@
+{
+    "watermark_type": "gnn",
+    "watermark_flag": 1,
+    "phase": 2,
+    "resume": 0,
+    "plot_candidate": 1,
+    "search_type": "direct", 
+    "score_type": "count_num",
+
+    "fence_region_num": 1,
+    "watermark_num": 50,
+    "position_x": 1000,
+    "position_y": 1000,
+
+    "node_feat_fun": "physical",
+    "GNN_type": "GCN",
+    "add_bert_embed": 1,
+    "lr": 0.01,
+    "weight_decay": 0.001,
+    "num_epochs": 30,
+    "batch_size": 1280,
+    "ablation": 0, 
+    "feat_ablation": "all",
+    "label_clip": 0.01,
+    
+    "mode": "inference",
+    "select_train_node": "pwlr",
+    "in_dim": 8,
+    "hidden_dim": 64,
+    "out_dim": 1,
+    "num_layers": 7,
+    "abla_gamma": 0.1,
+    "visual": 0,
+
+    "attack": 0,
+    "attack_seed": 128,
+    "attack_method": "swap_pairs",
+    "attack_ratio":  "0.001, 0.01, 0.1",
+    "attack_step": 1,
+    "attack_num": "10, 50"
+}

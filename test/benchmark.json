@@ -1,0 +1,29 @@
+{
+    "watermark_type": "benchmark",
+    "watermark_flag": 1,
+    "phase": 2,
+    "resume": 0,
+    "plot_candidate": 1,
+    "search_type": "direct", 
+
+    "fence_region_num": 1,
+    "benchmark_stride": 10,
+    "watermark_num": 50,
+    "position_x": 3000,
+    "position_y": 4000,
+
+    "node_feat_fun": "physical",
+    "GNN_type": "GCN",
+    "lr": 0.01,
+    "num_epochs": 20,
+    "batch_size": 128,
+    
+    "mode": "train",
+    "in_dim": 4,
+    "hidden_dim": 64,
+    "out_dim": 1,
+    "num_layers": 4,
+    "dropout": 0.3,
+
+    "attack": 0
+}
