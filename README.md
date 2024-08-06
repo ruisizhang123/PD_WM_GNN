@@ -3,7 +3,7 @@
 Artifact evaluation for MLCAD 2024 paper "Automated Physical Design Watermarking Leveraging Graph Neural Networks"
 
 
-##### Environment Setup
+#### Environment Setup
 
 ```bash 
 # clone code
@@ -21,7 +21,7 @@ Our codebase builds heavily upon [DREAMPlace](https://github.com/limbo018/DREAMP
 docker build . --file Dockerfile --tag PD_WM_GNN/dreamplace:cuda
 ```
 
-##### Watermark layout
+#### Watermark layout
 
 1. Download required benchmarks
 
@@ -59,4 +59,17 @@ Change `attack` in `./test/graph.json` from `0` to `1`.
 
 ```bash
 python dreamplace/Placer.py test/ispd2019/lefdef/ispd19_test1.json ./test/graph.json 
+```
+
+#### Citation
+
+If you found our code/paper helpful, please kindly cite:
+
+```latex 
+@article{zhang2024automated,
+  title={Automated Physical Design Watermarking Leveraging Graph Neural Networks},
+  author={Zhang, Ruisi and Rajarathnam, Rachel Selina and Pan, David Z and Koushanfar, Farinaz},
+  journal={arXiv preprint arXiv:2407.20544},
+  year={2024}
+}
 ```
