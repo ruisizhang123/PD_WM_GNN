@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.14)
 
 project(DREAMPlace LANGUAGES CXX)
 set(CMAKE_VERBOSE_MAKEFILE ON)
+set(Python_ROOT_DIR $ENV{CONDA_PREFIX})
+set(Python_EXECUTABLE ${Python_ROOT_DIR}/bin/python)
 
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set (CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/install" CACHE PATH "Prefix prepended to install directories" FORCE )

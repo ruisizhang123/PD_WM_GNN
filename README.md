@@ -9,8 +9,11 @@ Artifact evaluation for MLCAD 2024 paper "Automated Physical Design Watermarking
 # clone code
 git clone --recursive https://github.com/ruisizhang123/PD_WM_GNN.git
 cd PD_WM_GNN
+# create conda env
+conda create -n  pd_wm_gnn python=3.9
+conda activate pd_wm_gnn
 # install required packages
-pip install -r requirements.txt
+pip install -r requirement.txt
 # build
 bash build.sh
 ```
