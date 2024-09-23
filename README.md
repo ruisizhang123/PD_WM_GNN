@@ -47,7 +47,7 @@ We use [CU-GR](https://github.com/cuhk-eda/cu-gr) to route the wm'ed layout. Alt
 ```bash
 ./iccad19gr_upd -lef  benchmarks/ispd2019/ispd19_test1/ispd19_test1.input.lef -def  results/ispd19_test1.input/ispd19_test1.input.500.def -output result.solution.guide -threads 8  >> results/ispd19_test1.input/ispd19_test1/log.txt
 ```
- 
+
 3. Train GNN from scratch
 
 Change `mode` in `./test/graph.json` from `inference` to `train`. We collect and train our model on ISPD19 test6 design.
@@ -69,10 +69,11 @@ python dreamplace/Placer.py test/ispd2019/lefdef/ispd19_test1.json ./test/graph.
 If you found our code/paper helpful, please kindly cite:
 
 ```latex 
-@article{zhang2024automated,
+@inproceedings{zhang2024automated,
   title={Automated Physical Design Watermarking Leveraging Graph Neural Networks},
   author={Zhang, Ruisi and Rajarathnam, Rachel Selina and Pan, David Z and Koushanfar, Farinaz},
-  journal={arXiv preprint arXiv:2407.20544},
+  booktitle={Proceedings of the 2024 ACM/IEEE International Symposium on Machine Learning for CAD},
+  pages={1--10},
   year={2024}
 }
 ```
