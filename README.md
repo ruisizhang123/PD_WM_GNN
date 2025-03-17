@@ -1,8 +1,8 @@
-# PD_WM_GNN
+# Physical Design Watermarking 
 
-Artifact evaluation for MLCAD 2024 paper "Automated Physical Design Watermarking Leveraging Graph Neural Networks"
+Artifact evaluation for MLCAD 2024 paper "Automated Physical Design Watermarking Leveraging Graph Neural Networks" [Paper](https://arxiv.org/abs/2407.20544)
 
-Code for TCAD 2025 paper "ICMarks: A Robust Watermarking Framework for Integrated Circuit Physical Design IP Protection"
+Code for TCAD 2025 paper "ICMarks: A Robust Watermarking Framework for Integrated Circuit Physical Design IP Protection" [Paper](https://arxiv.org/abs/2404.18407)
 
 #### Environment Setup
 
@@ -33,7 +33,7 @@ python ispd2005_2015.py
 python ispd2019.py
 ```
 
-#### Watermark layout with Heuristic Approach (TCAD 2025)
+#### Watermark layout with heuristic approach (TCAD 2025)
 2. Watermark design
 
 Watermark ISPD19 test1 design, with our heuristic approach.
