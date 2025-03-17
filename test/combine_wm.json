@@ -1,0 +1,32 @@
+{
+    "watermark_type": "combine",
+    "watermark_flag": 1,
+    "seed": 32,
+    "watermark_num": 50,
+
+    "global_wm": "minimal_degradation",
+    "fence_region_gen": "score",
+    "wm_fence_gap_ablation": [3000],
+    "wm_cell_ratio_ablation": [],
+    "fence_region_num": 1,
+
+
+    "watermark_method": "random_perturb_constraint",
+    "watermark_phase": "before_dp",
+    
+    "watermark_ratio": 0.05,
+    "watermark_step": 1,
+
+    "watermark_extract": 1,
+    "watermark_extract_threshold": 0.8,
+
+    "capacity_bench": 0,
+    "ablation" : 0,
+    "special_plot": 0,
+    "attack": 0,
+    "attack_seed": 116,
+    "attack_method": "swap_pairs",
+    "attack_ratio":  "0.001, 0.01, 0.1",
+    "attack_step": 1,
+    "attack_num": "10, 50"
+}

@@ -1,0 +1,23 @@
+{
+    "watermark_type": "detail",
+    "watermark_flag": 1,
+    "seed": 32,
+    "watermark_method": "random_perturb_constraint",
+    "watermark_phase": "before_dp",
+    "watermark_ratio": 0.005,
+    "watermark_step": 1,
+    "watermark_num": 50,
+
+    "watermark_extract": 1,
+    "watermark_extract_threshold": 0.8,
+    
+    "ablation" : 0,
+    "special_plot": 0,
+    "capacity_bench": 1,
+    "attack": 1,
+    "attack_seed": 116, 
+    "attack_method": "swap_pairs",
+    "attack_ratio": "0.001, 0.01, 0.1",
+    "attack_num": "10, 50",
+    "attack_step": 1
+}

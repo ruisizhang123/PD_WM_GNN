@@ -232,6 +232,34 @@ if __name__ == "__main__":
     tt = time.time()
     if params.watermark_type == "benchmark":
         metrics = place_benchmark(params)
+    elif params.watermark_type == "global" or params.watermark_type == "combine":
+        params_archive = copy.deepcopy(params)
+        alpha_list = [0.1, 0.5, 0]
+        beta_list = [0.1, 0.5, 0]
+        gamma_list = [0.1]
+        final_hpwl = 2
+
+        for alpha in alpha_list:
+            for beta in beta_list:
+                for gamma in gamma_list:
+                    params_exp = copy.deepcopy(params_archive)
+                    params_exp.alpha_weight = alpha
+                    params_exp.beta_weight = beta
+                    params_exp.gamma_weight = gamma
+                    hpwl, selected_ranks = place(params_exp)
+
+                    final_hpwl = hpwl
+                    final_selected_ranks = selected_ranks
+                    if params_exp.fence_region_num > 1:
+                        final_hpwl = 1
+                    if final_hpwl <= 1.005:
+                        break
+                if final_hpwl <= 1.005:
+                        break
+            if final_hpwl <= 1.005:
+                        break
+        with open("hpwl.txt", "a") as f:
+            f.write(str(final_hpwl) + "\n")
     else:
         place(params)
     logging.info("placement takes %.3f seconds" % (time.time() - tt))

@@ -465,7 +465,155 @@ class PlaceDB (object):
         @param row_id row index
         """
         logging.debug("row %d %s" % (row_id, self.rows[row_id]))
+    
+    def get_region_score(self, save_pos, sizex, sizey, id_x, id_y, fence_region_size, params):
+        # score 1: num of cells within region; score 2: area of cells in region; score 3:  
+        x_inter_idx = np.where((self.x_position_left_stand > id_x) & (self.x_position_right_stand < id_x+fence_region_size))[0] # find who is within region
+        y_inter_idx = np.where((self.y_position_down_stand > id_y) & (self.y_position_up_stand < id_y+fence_region_size))[0]
+        x_inter_idx_overlap = np.where((self.x_position_right_stand >= id_x) & (self.x_position_left_stand <= id_x+fence_region_size))[0] # find who has overlap with region
+        y_inter_idx_overlap = np.where((self.y_position_up_stand >= id_y) & (self.y_position_down_stand <= id_y+fence_region_size))[0]
+
+        x_macro_inter_idx = np.where((self.x_position_left_macro > id_x) & (self.x_position_right_macro < id_x+fence_region_size))[0] # find who is within region
+        y_macro_inter_idx = np.where((self.y_position_down_macro > id_y) & (self.y_position_up_macro < id_y+fence_region_size))[0]
+        x_macro_inter_overlap = np.where((self.x_position_right_macro>= id_x) & (self.x_position_left_macro <= id_x+fence_region_size))[0] #  find who has overlap with region
+        y_macro_inter_overlap = np.where((self.y_position_up_macro >= id_y) & (self.y_position_down_macro <= id_y+fence_region_size))[0]
         
+        macro_inter_idx = np.intersect1d(x_macro_inter_idx, y_macro_inter_idx)
+        macro_inter_overlap = np.intersect1d(x_macro_inter_overlap, y_macro_inter_overlap)
+        macro_inter_overlap = np.setdiff1d(macro_inter_overlap, macro_inter_idx)
+
+        cell_idx = np.intersect1d(x_inter_idx, y_inter_idx)
+        #print("cell_idx", len(cell_idx), "cell_idx_overlap", len(cell_idx_overlap), "macro_inter_idx", len(macro_inter_idx))  
+        cell_idx_overlap = np.intersect1d(x_inter_idx_overlap, y_inter_idx_overlap)
+        # excluse cell_idx in cell_idx_overlap
+        cell_idx_overlap = np.setdiff1d(cell_idx_overlap, cell_idx)
+
+        if len(cell_idx) <=params.watermark_num or len(macro_inter_overlap)>0:
+            return float('inf')
+  
+
+        score1 = params.watermark_num/len(cell_idx) # smaller, better
+
+        size_within_region = torch.sum(sizex[cell_idx] * sizey[cell_idx]).item()  # standard cells
+        macro_size_within_region = torch.sum(self.macro_size_x[macro_inter_idx] * self.macro_size_y[macro_inter_idx]).item() # macro cells
+
+        score2 = (size_within_region+macro_size_within_region)/fence_region_size**2 # smaller, better
+        
+        
+        overlap_region = 0
+        for i in cell_idx_overlap:
+            # overlap at lower left corner
+            if self.x_position_left_stand[i] < id_x and self.y_position_down_stand[i] < id_y:
+                overlap_region += (self.x_position_right_stand[i]-id_x)*(self.y_position_up_stand[i]-id_y)
+            elif self.x_position_left_stand[i] < id_x and self.y_position_down_stand[i] >= id_y:
+                min_y = min(self.y_position_up_stand[i], id_y+fence_region_size)
+                overlap_region += (self.x_position_right_stand[i]-id_x)*(min_y-self.y_position_down_stand[i])
+            elif self.x_position_left_stand[i] >= id_x and self.y_position_down_stand[i] < id_y:
+                min_x = min(self.x_position_right_stand[i], id_x+fence_region_size)
+                overlap_region += (min_x-self.x_position_left_stand[i])*(self.y_position_up_stand[i]-id_y)
+            elif self.x_position_left_stand[i] >= id_x and self.y_position_down_stand[i] >= id_y:
+                min_x = min(self.x_position_right_stand[i], id_x+fence_region_size)
+                min_y = min(self.y_position_up_stand[i], id_y+fence_region_size)
+                overlap_region += (min_x-self.x_position_left_stand[i])*(min_y-self.y_position_down_stand[i])
+        score3 = overlap_region/fence_region_size**2 # smaller, better
+        # convert score3 to tensor if it is
+        if isinstance(score3, torch.Tensor):
+            score3 = score3.item()
+        
+        #print("current position", id_x, id_y)
+        #print("current score", score1, score2, score3) #1:5:10； 50/10 test 7
+        return params.alpha_weight*score1+params.beta_weight*score2+params.gamma_weight*score3 
+        #return score1+score2+score3
+        #return score3
+    
+    def check_in_fence_region(self, id_x, id_y, fence_region_size):
+        #print("self.x_fence_right", self.x_fence_right, id_x+fence_region_size)
+        x_iter_idx = np.where((id_x+fence_region_size > self.x_fence_left) & (id_x < self.x_fence_right))[0]
+        y_iter_idx = np.where((id_y+fence_region_size > self.y_fence_low) & (id_y < self.y_fence_up))[0]
+
+        iter_idx = np.intersect1d(x_iter_idx, y_iter_idx)
+
+        if len(iter_idx) > 0:
+            return True
+        
+        y_macro_iter_idx = np.where((id_y+fence_region_size > self.y_position_down_macro) & (id_y < self.y_position_up_macro))[0]
+        x_macro_iter_idx = np.where((id_x+fence_region_size > self.x_position_left_macro) & (id_x < self.x_position_right_macro))[0]
+        macro_iter_idx = np.intersect1d(x_macro_iter_idx, y_macro_iter_idx)
+        if len(macro_iter_idx) > 0:
+            return True
+        return False
+
+    def score_fence_region(self, save_pos, sizex, sizey, fence_region_size, fence_region_stride, params, mode="default"):
+        node_num_prev = len(sizex)
+        cell_nums = self.num_movable_nodes + self.num_terminals + self.num_terminal_NIs
+
+        self.x_position_left = save_pos[:cell_nums]
+        self.y_position_down = save_pos[node_num_prev : node_num_prev+cell_nums]
+        self.x_position_right = save_pos[:cell_nums] + sizex[:cell_nums]
+        self.y_position_up = save_pos[node_num_prev : node_num_prev+cell_nums] + sizey[:cell_nums]
+
+        self.x_position_left_stand = self.x_position_left[:self.num_movable_nodes]
+        self.y_position_down_stand = self.y_position_down[:self.num_movable_nodes]
+        self.x_position_right_stand = self.x_position_right[:self.num_movable_nodes]
+        self.y_position_up_stand = self.y_position_up[:self.num_movable_nodes]
+
+        self.x_position_left_macro = self.x_position_left[self.num_movable_nodes:cell_nums]
+        self.y_position_down_macro = self.y_position_down[self.num_movable_nodes:cell_nums]
+        self.x_position_right_macro = self.x_position_right[self.num_movable_nodes:cell_nums]
+        self.y_position_up_macro = self.y_position_up[self.num_movable_nodes:cell_nums]
+
+        self.macro_size_x = sizex[self.num_movable_nodes:self.num_movable_nodes + self.num_terminals + self.num_terminal_NIs]
+        self.macro_size_y = sizey[self.num_movable_nodes:self.num_movable_nodes + self.num_terminals + self.num_terminal_NIs]
+
+        if len(self.flat_region_boxes) > 0:
+            self.x_fence_left = torch.tensor([self.flat_region_boxes[i][0]/self.constant  for i in range(len(self.flat_region_boxes))])
+            self.y_fence_low = torch.tensor([self.flat_region_boxes[i][1]/self.constant  for i in range(len(self.flat_region_boxes))])
+            self.x_fence_right = torch.tensor([self.flat_region_boxes[i][2]/self.constant  for i in range(len(self.flat_region_boxes))])
+            self.y_fence_up = torch.tensor([self.flat_region_boxes[i][3]/self.constant  for i in range(len(self.flat_region_boxes))])
+            
+            
+        #min_x = max(0,  int(torch.min(self.x_position_left).item()))
+        min_x = int(torch.min(self.x_position_left).item())
+        max_x = int(torch.max(self.x_position_left).item())
+
+        #min_y = max(0, int(torch.min(self.y_position_down).item()))
+        min_y = int(torch.min(self.y_position_down).item())
+        max_y = int(torch.max(self.y_position_down).item())
+
+        start_idx = []
+        scores = []
+        for id_x in range(min_x, max_x-int(fence_region_size), int(fence_region_stride)):
+            for id_y in range(min_y, max_y-int(fence_region_size), int(fence_region_stride)):
+                ## check if the region is in fence region
+                #print("fence region", len(self.flat_region_boxes), id_x, id_y, self.check_in_fence_region(id_x, id_y, fence_region_size))
+                if len(self.flat_region_boxes) > 0:
+                    if self.check_in_fence_region(id_x, id_y, fence_region_size): # if in fence region, continue
+                        start_idx.append([id_x, id_y])
+                        scores.append(float('inf'))
+                        continue
+                score = self.get_region_score(save_pos, sizex, sizey, id_x, id_y, fence_region_size, params)
+                start_idx.append([id_x, id_y])
+                scores.append(score)
+                
+        
+        #print("start_idx", start_idx)
+        # get idx of min score
+        #import pdb; pdb.set_trace()
+        print("place info", min_x, max_x, min_y, max_y, fence_region_stride)
+        min_idx = np.argpartition(scores, params.fence_region_num) #np.argmin(scores)
+        print(min_idx, params.fence_region_num)
+        min_idx = [min_idx[0] , min_idx[1], min_idx[2], min_idx[3], min_idx[4]]
+        #import pdb; pdb.set_trace()
+        #print("self.flat_region_boxes", self.flat_region_boxes)
+        #print("min_idx", min_idx, scores[min_idx], start_idx[min_idx])
+        
+        if mode == "final":
+            return scores
+        for i in min_idx:
+            print("score[i]", scores[i])
+            assert scores[i] is not float('inf'), "no valid region"
+        return [start_idx[i] for i in min_idx], min_idx
+
     def create_graph_from_netlist(self, params, net2pin_map, pin2node_map, pin_direct, num_nets, num_physical_nodes):
         src = []
         dst = []
@@ -967,7 +1115,7 @@ class PlaceDB (object):
         region_ratios = []
         wm_cell_nums = []
         start_num = 0
-        if (params.watermark_flag and params.watermark_type == "gnn" and params.phase == 2) or  (params.watermark_flag and params.watermark_type == "benchmark") or params.watermark_type == "combine":
+        if (params.watermark_flag and params.watermark_type == "gnn" and params.phase == 2) or  (params.watermark_flag and params.watermark_type == "benchmark") or params.watermark_type == "combine" or (params.watermark_flag and params.watermark_type == "global" and params.globa_wm_phase == 1) :
             path = "%s/%s" % (params.result_dir, params.design_name())
             if "ispd2015" in params.bench_name():
                 additional_dir = params.bench_name().split("/")[2]

@@ -1,0 +1,27 @@
+{
+    "watermark_type": "global",
+    "watermark_method": "static",
+    "watermark_flag": 1,
+    "seed": 32,
+    "watermark_num": 50,
+
+    "globa_wm_phase": 1,
+    "fence_region_gen": "score",
+    
+    "fence_region_num": 1,
+    
+
+    "ablation": 1,
+    "special_plot": 0,
+        
+    "wm_fence_gap_ablation": [3000],
+    "wm_cell_ratio_ablation": [],
+    "wm_fence_region_size_ablation": [],
+    "capacity_bench":0,
+    "attack": 0,
+    "attack_seed": 116,
+    "attack_method": "swap_pairs",
+    "attack_ratio":  "0.001, 0.01, 0.1",
+    "attack_num": "10, 50",
+    "attack_step": 12
+}

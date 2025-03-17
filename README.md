@@ -2,6 +2,7 @@
 
 Artifact evaluation for MLCAD 2024 paper "Automated Physical Design Watermarking Leveraging Graph Neural Networks"
 
+Code for TCAD 2025 paper "ICMarks: A Robust Watermarking Framework for Integrated Circuit Physical Design IP Protection"
 
 #### Environment Setup
 
@@ -24,8 +25,6 @@ Our codebase builds heavily upon [DREAMPlace](https://github.com/limbo018/DREAMP
 docker build . --file Dockerfile --tag PD_WM_GNN/dreamplace:cuda
 ```
 
-#### Watermark layout
-
 1. Download required benchmarks
 
 ```bash
@@ -33,6 +32,26 @@ cd benchmarks
 python ispd2005_2015.py
 python ispd2019.py
 ```
+
+#### Watermark layout with Heuristic Approach (TCAD 2025)
+2. Watermark design
+
+Watermark ISPD19 test1 design, with our heuristic approach.
+
+```bash
+python dreamplace/Placer.py test/ispd2019/lefdef/ispd19_test1.json ./test/combine_wm.json  # For ICMarks
+python dreamplace/Placer.py test/ispd2019/lefdef/ispd19_test1.json ./test/global_wm.json   # For Global Watermarking
+python dreamplace/Placer.py test/ispd2019/lefdef/ispd19_test1.json ./test/detail_wm.json   # For Detail Watermarking
+```
+
+We use [CU-GR](https://github.com/cuhk-eda/cu-gr) to route the wm'ed layout. We also provide the pre-built binary software to evaluate the wirelength in `iccad19gr_upd`.
+
+```bash
+./iccad19gr_upd -lef  benchmarks/ispd2019/ispd19_test1/ispd19_test1.input.lef -def  results/ispd19_test1.input/ispd19_test1.input.500.def -output result.solution.guide -threads 8  >> results/ispd19_test1.input/ispd19_test1/log.txt
+```
+
+#### Watermark layout with GNN (MLCAD 2024)
+
 
 2. Watermark design (Inference)
 
@@ -42,7 +61,7 @@ Watermark ISPD19 test1 design, with our pre-trained GNN model.
 python dreamplace/Placer.py test/ispd2019/lefdef/ispd19_test1.json ./test/graph.json 
 ```
 
-We use [CU-GR](https://github.com/cuhk-eda/cu-gr) to route the wm'ed layout. Alternatively, you can use pre-built binary software to evaluate: 
+We use [CU-GR](https://github.com/cuhk-eda/cu-gr) to route the wm'ed layout. 
 
 ```bash
 ./iccad19gr_upd -lef  benchmarks/ispd2019/ispd19_test1/ispd19_test1.input.lef -def  results/ispd19_test1.input/ispd19_test1.input.500.def -output result.solution.guide -threads 8  >> results/ispd19_test1.input/ispd19_test1/log.txt
@@ -69,6 +88,13 @@ python dreamplace/Placer.py test/ispd2019/lefdef/ispd19_test1.json ./test/graph.
 If you found our code/paper helpful, please kindly cite:
 
 ```latex 
+@article{zhang2024icmarks,
+  title={ICMarks: A Robust Watermarking Framework for Integrated Circuit Physical Design IP Protection},
+  author={Zhang, Ruisi and Rajarathnam, Rachel Selina and Pan, David Z and Koushanfar, Farinaz},
+  journal={arXiv preprint arXiv:2404.18407},
+  year={2024}
+}
+
 @inproceedings{zhang2024automated,
   title={Automated Physical Design Watermarking Leveraging Graph Neural Networks},
   author={Zhang, Ruisi and Rajarathnam, Rachel Selina and Pan, David Z and Koushanfar, Farinaz},

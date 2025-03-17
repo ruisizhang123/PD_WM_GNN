@@ -252,8 +252,11 @@ class NonLinearPlace(BasicPlace.BasicPlace):
 
     def check_extraction_ratio(self, pos):
         extraction_ratio = 0
+        if self.params.watermark_type =="detail" or self.params.watermark_type =="combine" or self.params.watermark_type =="scatter_wm":
+            extraction_ratio, _ = self.op_collections.watermark_extract_op(self.ori_pos, pos, self.keys, self.wm_dist, wm_cell_idx=self.wm_cell_idx, phase="after_attack", attack_ratio=0)
+        
 
-        if self.params.watermark_type =="gnn":
+        if self.params.watermark_type =="gnn" or (self.params.watermark_type =="global" and self.params.globa_wm_phase==1) or self.params.watermark_type =="combine":
             total_matched = 0
             total_cell = 0
             for num in range(self.params.fence_region_num):
@@ -278,7 +281,10 @@ class NonLinearPlace(BasicPlace.BasicPlace):
         
                 total_matched = total_matched + matched
                 total_cell = total_cell + len(cell)
-            extraction_ratio = total_matched/total_cell
+            if self.params.watermark_type =="global" or self.params.watermark_type =="gnn":
+                extraction_ratio = total_matched/total_cell
+            elif self.params.watermark_type =="combine":
+                extraction_ratio = (extraction_ratio + total_matched/total_cell)/2
         
         return extraction_ratio
 
@@ -580,6 +586,29 @@ class NonLinearPlace(BasicPlace.BasicPlace):
         if params.dump_legalize_solution_flag:
             self.dump(params, placedb, self.pos[0].cpu(), "%s.dp.pklz" % (params.design_name()))
 
+        if (params.watermark_flag and params.watermark_type == "detail") or params.watermark_type == "combine":
+            if "before_dp" in params.watermark_phase:
+                random.seed(params.seed)
+                # insert watermark
+                self.ori_pos = self.pos[0].data.clone()
+                if params.watermark_type == "detail":
+                    wm_pos, wm_cell_idx, self.keys, sub_t = self.op_collections.watermark_op(self.pos[0])
+                elif params.watermark_type == "combine":
+                    wm_pos, wm_cell_idx,  self.keys, sub_t = self.op_collections.watermark_op(self.pos[0])
+                self.watermark_cells[wm_cell_idx] = 1
+                if self.params.special_plot:
+                    with open("wm_pos.pkl", "wb") as f:
+                        pickle.dump(wm_cell_idx, f)
+                self.pos[0].data.copy_(wm_pos)
+                # legalize
+                legal = self.op_collections.legality_check_op(self.pos[0])
+                if not legal:
+                    self.pos[0].data.copy_(self.op_collections.legalize_op(self.pos[0]))
+                logging.info("watermark takes %.3f seconds" % (time.time() - tt))
+                iteration += 1
+        else:
+            sub_t = 0
+            
         # detailed placement
         if params.detailed_place_flag:
             tt = time.time()
