@@ -88,11 +88,12 @@ python dreamplace/Placer.py test/ispd2019/lefdef/ispd19_test1.json ./test/graph.
 If you found our code/paper helpful, please kindly cite:
 
 ```latex 
-@article{zhang2024icmarks,
-  title={ICMarks: A Robust Watermarking Framework for Integrated Circuit Physical Design IP Protection},
+@article{zhang2025icmarks,
+  title={Icmarks: A robust watermarking framework for integrated circuit physical design ip protection},
   author={Zhang, Ruisi and Rajarathnam, Rachel Selina and Pan, David Z and Koushanfar, Farinaz},
-  journal={arXiv preprint arXiv:2404.18407},
-  year={2024}
+  journal={IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems},
+  year={2025},
+  publisher={IEEE}
 }
 
 @inproceedings{zhang2024automated,
